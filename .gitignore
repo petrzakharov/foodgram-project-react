@@ -130,3 +130,7 @@ dmypy.json
 
 # .idea
 .idea
+.vscode/*
+.vscode/
+my_notes.md
+*.http
