@@ -1,71 +1,97 @@
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import UserManager
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
+from django.core.mail import send_mail
 
+class UserManager(BaseUserManager):
+    use_in_migrations = True
 
-# class UserManager(BaseUserManager):
-#     use_in_migrations = True
+    def create_user(self, username, email, password, first_name, last_name, **extra_fields):
+        """
+        Create and save a user with the given username, email, and password.
+        """
+        if not username:
+            raise ValueError('У пользователя должен быть username')
+        if not email:
+            raise ValueError('У пользователя должен быть email')
+        if not first_name:
+            raise ValueError('У пользователя должно быть имя')
+        if not last_name:
+            raise ValueError('У пользователя должна быть фамилия')
+        email = self.normalize_email(email)
+        username = self.model.normalize_username(username)
+        last_name = self.last_name
+        user = self.model(
+            username=username, 
+            email=email, 
+            last_name=last_name,
+            fist_name=first_name,
+            **extra_fields
+            )
+        # user.last_name = last_name
+        # user.first_name = first_name
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
-#     def create_user(self, username, email, password, first_name, last_name, **extra_fields):
-#         """
-#         Create and save a user with the given username, email, and password.
-#         """
-#         if not username:
-#             raise ValueError('У пользователя должен быть username')
-#         if not email:
-#             raise ValueError('У пользователя должен быть email')
-#         if not first_name:
-#             raise ValueError('У пользователя должно быть имя')
-#         if not last_name:
-#             raise ValueError('У пользователя должна быть фамилия')
-#         email = self.normalize_email(email)
-#         username = self.model.normalize_username(username)
-#         last_name = self.last_name
-#         user = self.model(
-#             username=username, 
-#             email=email, 
-#             last_name=last_name,
-#             fist_name=first_name,
-#             **extra_fields
-#             )
-#         # user.last_name = last_name
-#         # user.first_name = first_name
-#         user.set_password(password)
-#         user.save(using=self._db)
-#         return user
-
-#     def create_superuser(self, username, first_name=None, last_name=None, email=None, password=None):
-#         user = self.create_user(
-#             username, 
-#             password, 
-#             first_name, 
-#             last_name,
-#             is_staff=True,
-#             is_admin=True
-#         )
-#         return user
+    def create_superuser(self, username, first_name=None, last_name=None, email=None, password=None):
+        user = self.create_user(
+            username, 
+            password, 
+            first_name, 
+            last_name,
+            is_staff=True,
+            is_admin=True
+        )
+        return user
     
-#     def create_staffuser(self, username, first_name=None, last_name=None, email=None, password=None):
-#         user = self.create_user(
-#             username,
-#             password,
-#             first_name,
-#             last_name,
-#             is_staff=True,
-#             is_admin=False
-#         )
-#         return user
+    def create_staffuser(self, username, first_name=None, last_name=None, email=None, password=None):
+        user = self.create_user(
+            username,
+            password,
+            first_name,
+            last_name,
+            is_staff=True,
+            is_admin=False
+        )
+        return user
 
 
-# class User(AbstractBaseUser):
-#     email = models.EmailField(unique=True, max_length=255)
-#     username = models.CharField(unique=True, max_length=50)
-#     first_name = models.CharField(max_length=255, null=True)
-#     last_name = models.CharField(max_length=255, null=True)
-    
-#     USERNAME_FIELD = 'username'
-#     REQUIRED_FIELDS = ['username']
-    
-#     objects = UserManager()
-    
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(_('email address'), unique=True, blank=False)
+    first_name = models.CharField(_('first name'), max_length=30, blank=False)
+    last_name = models.CharField(_('last name'), max_length=30, blank=False)
+    is_active = models.BooleanField(_('active'), default=True)
+    username = models.CharField(max_length=50, null=False, blank=False, unique=True)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    class Meta:
+        verbose_name = _('user')
+        verbose_name_plural = _('users')
+
+    def get_full_name(self):
+        '''
+        Returns the first_name plus the last_name, with a space in between.
+        '''
+        full_name = '%s %s' % (self.first_name, self.last_name)
+        return full_name.strip()
+
+    def get_short_name(self):
+        '''
+        Returns the short name for the user.
+        '''
+        return self.first_name
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        '''
+        Sends an email to this User.
+        '''
+        send_mail(subject, message, from_email, [self.email], **kwargs)
+
     
