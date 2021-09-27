@@ -1,12 +1,10 @@
 from django.contrib.admin.filters import ChoicesFieldListFilter
 from django.db import models
 
-#from users.models import User
+from users.models import User
 
 from .utils import greater_then_zero
 
-from django.contrib.auth import get_user_model
-User = get_user_model()
 
 class Follow(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,

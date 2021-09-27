@@ -5,10 +5,11 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, username, email, password, first_name, last_name, **extra_fields):
+    def _create_user(self, email, password, first_name, last_name, username, **extra_fields):
         """
         Create and save a user with the given username, email, and password.
         """
@@ -22,37 +23,37 @@ class UserManager(BaseUserManager):
             raise ValueError('У пользователя должна быть фамилия')
         email = self.normalize_email(email)
         username = self.model.normalize_username(username)
-        last_name = self.last_name
         user = self.model(
             username=username, 
             email=email, 
             last_name=last_name,
-            fist_name=first_name,
+            first_name=first_name,
             **extra_fields
-            )
-        # user.last_name = last_name
-        # user.first_name = first_name
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, first_name=None, last_name=None, email=None, password=None):
-        user = self.create_user(
-            username, 
-            password, 
-            first_name, 
-            last_name,
-            is_staff=True,
-            is_admin=True
-        )
-        return user
-    
+    def create_user(self, email, usename, first_name, last_name, password, **extra_fields):
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(email, usename, first_name, last_name, password, **extra_fields)
+
+    def create_superuser(self, email, username=None, first_name=None, last_name=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_active', True)
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self._create_user(email, username, first_name, last_name, password, **extra_fields)
+
     def create_staffuser(self, username, first_name=None, last_name=None, email=None, password=None):
         user = self.create_user(
             username,
             password,
             first_name,
             last_name,
+            email,
             is_staff=True,
             is_admin=False
         )
@@ -60,16 +61,21 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(_('email address'), unique=True, blank=False)
-    first_name = models.CharField(_('first name'), max_length=30, blank=False)
-    last_name = models.CharField(_('last name'), max_length=30, blank=False)
-    is_active = models.BooleanField(_('active'), default=True)
-    username = models.CharField(max_length=50, null=False, blank=False, unique=True)
+    username = models.CharField(
+        max_length=50, null=False, blank=False, unique=True)
+    email = models.EmailField(_('email address'), unique=True, blank=True)
+    first_name = models.CharField(_('first name'), max_length=30, blank=True)
+    last_name = models.CharField(_('last name'), max_length=30, blank=True)
+    is_active = models.BooleanField(_('active'), default=True) # тут активировать только после нажатия на ссылку
+    is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    
+    def __str__(self):
+        return self.username
 
     class Meta:
         verbose_name = _('user')
@@ -93,5 +99,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         Sends an email to this User.
         '''
         send_mail(subject, message, from_email, [self.email], **kwargs)
-
-    
