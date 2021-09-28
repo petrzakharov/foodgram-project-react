@@ -34,9 +34,9 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, usename, first_name, last_name, password, **extra_fields):
+    def create_user(self, email, username, first_name, last_name, password, **extra_fields):
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, usename, first_name, last_name, password, **extra_fields)
+        return self._create_user(email, username, first_name, last_name, password, **extra_fields)
 
     def create_superuser(self, email, username=None, first_name=None, last_name=None, password=None, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
@@ -71,8 +71,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
     
     def __str__(self):
         return self.username
