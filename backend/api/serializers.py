@@ -1,9 +1,10 @@
 from django.db.models import fields
 from rest_framework import serializers
 from users.models import User
+from api.models import Tag
 
-class UserCreateSerializer(serializers.Serializer):
-    
+
+class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = Tag
         fields = "__all__"
