@@ -154,6 +154,7 @@ class Favorite(models.Model):
                                     name="unique_favorite_recipe"),
         ]
         
+
     def __str__(self):
         return str(self.user) + '__' + str(self.recipe)
 
