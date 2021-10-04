@@ -29,21 +29,21 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class FavoriteUserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+# class FavoriteUserSerializer(serializers.ModelSerializer):
+#     is_subscribed = serializers.SerializerMethodField()
+#     recipes_count = serializers.SerializerMethodField()
     
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        qs = Follow.objects.filter(author=obj, user=request.user)
-        return qs.exists()
+#     def get_is_subscribed(self, obj):
+#         request = self.context.get('request')
+#         qs = Follow.objects.filter(author=obj, user=request.user)
+#         return qs.exists()
     
-    def get_recipes_count(self, obj):
-        return obj.recipes.count()
+#     def get_recipes_count(self, obj):
+#         return obj.recipes.count()
     
     
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'first_name', 'last_name')
+#     class Meta:
+#         model = User
+#         fields = ('email', 'id', 'first_name', 'last_name')
     
     

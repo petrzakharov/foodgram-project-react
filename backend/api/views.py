@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
 
+# Тег - готово
 class TagListView(generics.ListAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -23,19 +24,7 @@ class TagView(generics.RetrieveAPIView):
     serializer_class = TagSerializer
 
 
-# ошибка добавления в избранное не реализована
-# class FavoriteView(generics.RetrieveDestroyAPIView):
-#     queryset = Favorite.objects.all()
-#     serializer_class = FavoriteSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-    
-#     def get_queryset(self):
-#         queryset = super().get_queryset()
-#         return queryset.filter(id=request.user)
-
-
-
-# протестировать, когда будут наполнены рецепты
+# Избранное - готово, протестировать, когда будут наполнены рецепты
 class FavoriteView(APIView):
     def get(self, request, pk=None):
         has_favorite = Favorite.objects.filter(
@@ -57,35 +46,11 @@ class FavoriteView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
         
 
-class FollowView(APIView):
-    def get(self, request, pk):
-        request.QUERY['recipes_limit']  # recipes_limit
-        author = User.objects.get(id=pk)
-        Follow.objects.create(
-            author=author,
-            user=request.user
-        )
-        paginations_limit = request.GET.get('recipes_limit', None)
-        # author_receips = Recipe.objects.filter(author=author)
-        
-
-    def delete(self, request, pk):
-        author = get_object_or_404(User, pk=1)
-        queryset = Follow.objects.filter(author__id=pk, user=request.user)
-        if not queryset.exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        queryset.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        
-        
-class FollowViewList(generics.ListAPIView):
-    pass
-
-
+# Ингредиент - готово
 class IngredientView(generics.RetrieveAPIView):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    
+
 
 class IngredientViewList(generics.ListAPIView):
     serializer_class = IngredientSerializer
@@ -96,3 +61,9 @@ class IngredientViewList(generics.ListAPIView):
         if not name_param:
             return queryset
         return queryset.filter(name__startswith=name_param)
+
+
+
+
+
+

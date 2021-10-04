@@ -7,11 +7,11 @@ from .utils import greater_then_zero
 
 
 class Follow(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                            verbose_name="Подписчик", related_name="follower")
     author = models.ForeignKey(User, on_delete=models.CASCADE,
+                            verbose_name="Подписчик", related_name="followers")
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
                             verbose_name="На кого подписан",
-                            related_name="following")
+                            related_name="followings")
     
     class Meta:
         constraints = [
