@@ -1,17 +1,36 @@
 from django.db.models import fields
 from rest_framework import serializers
 from users.models import User
-from djoser.serializers import UserCreateSerializer
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from api.models import Follow, Favorite, Recipe
-from api.serializers import FavoriteSerializer
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta():
+        model = User
+        fields = ('id', 'email', 'username', 'first_name',
+                  'last_name', 'is_subscribed')
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=self.context['request'].user,
+                                     author=obj).exists()
 
 
 class UserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model = User
-        fields = ('first_name','last_name','username','email','password')
-
-
+        fields = ('email', 'username', 'first_name', 'last_name', 'password')
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -30,7 +49,7 @@ class FollowSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         request = self.context.get('request')
         qs = obj.recipes.all()[:request.query_params.get('recipes_limit')]
-        serialized = FavoriteSerializer(qs, many=True)
+        serialized = RecipeSerializer(qs, many=True)
         return serialized.data
     
     class Meta:
@@ -39,4 +58,4 @@ class FollowSerializer(serializers.ModelSerializer):
                   'last_name', 'username', 'is_subscribed',
                   'recipes_count', 'recipes')
     
-    
+

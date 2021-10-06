@@ -8,10 +8,11 @@ from .utils import greater_then_zero
 
 class Follow(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE,
-                            verbose_name="Подписчик", related_name="followers")
+                            verbose_name="На кого подписан", 
+                            related_name="following")
     user = models.ForeignKey(User, on_delete=models.CASCADE,
-                            verbose_name="На кого подписан",
-                            related_name="followings")
+                            verbose_name="Кто подписан",
+                            related_name="follower")
     
     class Meta:
         constraints = [
@@ -21,18 +22,6 @@ class Follow(models.Model):
 
     def __str__(self):
         return str(self.user.username) + '__' + str(self.author.username)
-
-
-class IngredientAmount(models.Model):
-    amount = models.PositiveSmallIntegerField(
-        verbose_name="Количество",
-        blank=False, 
-        validators=[greater_then_zero], 
-        unique=True
-    )
-    
-    def __str__(self):
-        return str(self.amount)
 
 
 class Ingredient(models.Model):
@@ -62,6 +51,10 @@ class Ingredient(models.Model):
         blank=False
     )
     
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+    
     def __str__(self):
         return self.name + '__' + self.measurement_unit
 
@@ -80,6 +73,10 @@ class Tag(models.Model):
         max_length=100
     )
     slug = models.SlugField(blank=False, unique=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'Теги'
+        verbose_name_plural = 'Теги'
     
     def __str__(self):
         return self.name
@@ -131,11 +128,34 @@ class Recipe(models.Model):
         blank=False
     )
     
-    def __str__(self):
-        return self.name
 
     class Meta:
         ordering = ["-pub_date",]
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+        
+    def __str__(self):
+        return self.name
+
+
+class IngredientAmount(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.PROTECT,
+                                   verbose_name='Ингредиент', null=True)
+    amount = models.PositiveSmallIntegerField(
+        verbose_name="Количество",
+        blank=False,
+        validators=[greater_then_zero],
+        unique=True
+    )
+    
+    class Meta:
+        verbose_name = 'Количество ингредиентов'
+        verbose_name_plural = 'Количество ингредиентов'
+
+    def __str__(self):
+        return str(self.amount) + '_' + str(self.ingredient)
+
 
 
 class Favorite(models.Model):
@@ -153,6 +173,8 @@ class Favorite(models.Model):
             models.UniqueConstraint(fields=["user", "recipe"],
                                     name="unique_favorite_recipe"),
         ]
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         
 
     def __str__(self):
@@ -176,3 +198,5 @@ class ShoppingCart(models.Model):
             models.UniqueConstraint(fields=["user", "recipe"],
                                     name="unique_recipe_in_cart"),
         ]
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
