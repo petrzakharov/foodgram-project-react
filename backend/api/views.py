@@ -8,11 +8,12 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from .models import Ingredient, Tag, Favorite, Follow, Recipe
 from users.models import User
-from .serializers import RecipeSerializerList, TagSerializer, FavoriteSerializer, IngredientSerializer
+from .serializers import RecipeListSerializer, TagSerializer, FavoriteSerializer, IngredientSerializer
 from rest_framework import permissions, filters, status, viewsets
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-
+from .permissions import IsAdminOrAuthorOrReadOnly
+from users.pagination import LargeResultsSetPagination
 
 # Тег - готово
 class TagListView(generics.ListAPIView):
@@ -80,33 +81,18 @@ class IngredientViewList(generics.ListAPIView):
         return queryset.filter(name__startswith=name_param)
 
 
-class RecipeView(viewsets.ViewSet):
+class RecipeView(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    
-    def list(self, request):
-        serializer = RecipeSerializerList(self.queryset, many=True)
-        return Response(serializer.data)
-    
-    def create(self, request):
-        data = RecipeCreateSerializer(data=request.data)
-        data.is_valid(raise_exception=True)
-        data.save()
-        return Response(data.data, status=status.HTTP_201_CREATED)
-    
-    def retrieve(self, request, pk):
-        pass
-    
-    def update(self, request, pk=None):
-        pass
-    
-    def destroy(self, request, pk=None):
-        pass
-    
-    def get_permissions(self):
-        if self.action in ('list', 'retrieve'):
-            return []
-        if self.actions == 'create':
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            return [] # написать кастомный пермишн на проверку автора
-        return [permission() for permission in permission_classes]
+   # serializer_class = CreateRecipeSerializer # разобрать, написать
+    permission_classes = [IsAdminOrAuthorOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    #filter_class = RecipeFilter # разобрать, написать
+    pagination_class = LargeResultsSetPagination
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return RecipeListSerializer 
+        #return CreateRecipeSerializer  # разобрать, написать

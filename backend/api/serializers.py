@@ -22,40 +22,62 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = "__all__"
     
-    def get_measurement_unit(self, obj):
-        return obj.get_measurement_unit_display()
-
-
-
-class RecipeJoinIngredientsSerializer(serializers.ModelSerializer):
-    ingredients = IngredientSerializer()
+    # def get_measurement_unit(self, obj):
+    #     return obj.get_measurement_unit_display()
     
+    
+class ShowRecipeIngredientSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
+
     class Meta:
         model = IngredientAmount
-        exclude = ('recipe',)
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class RecipeSerializerList(serializers.ModelSerializer):
+
+# class RecipeJoinIngredientsSerializer(serializers.ModelSerializer):
+#     ingredients = IngredientSerializer()
     
-    author = CustomUserSerializer()
+#     class Meta:
+#         model = IngredientAmount
+#         exclude = ('recipe',)
+
+
+class RecipeListSerializer(serializers.ModelSerializer):
+    
     tags = TagSerializer(many=True)
-    ingredients = RecipeJoinIngredientsSerializer(many=True)
+    author = CustomUserSerializer()
+    ingredients = serializers.SerializerMethodField()
     is_favorited = SerializerMethodField()
-    is_shopping_cart = SerializerMethodField()
+    is_in_shopping_cart = SerializerMethodField()
     
+    def get_ingredients(self, obj):
+        qs = IngredientAmount.objects.filter(recipe=obj)
+        return ShowRecipeIngredientSerializer(qs, many=True).data
+
     def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:  # проверить что передается request
+            return False
         return Favorite.objects.filter(
-            user=self.request.user, recipe=obj.recipe
+            recipe=obj, user=request.user
         ).exists()
     
-    def get_is_shopping_cart(self, obj):
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous: # проверить что передается request
+            return False
         return ShoppingCart.objects.filter(
-            user=self.request.user, recipe=obj.recipe
+            user=request.user, recipe=obj
         ).exists()
     
     class Meta:
         model = Recipe
-        fields = '__all__'
+        exclude = ('pub_date',)
         
 
 class FavoriteSerializer(serializers.ModelSerializer):

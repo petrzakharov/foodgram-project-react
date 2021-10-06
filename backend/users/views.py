@@ -53,7 +53,7 @@ class FollowViewList(generics.ListAPIView):
     def get_queryset(self):
         qs = User.objects.filter(following__user=self.request.user)
         return qs
-        
+       
 
 class FollowView(APIView):
     """Подписка на нового автора"""

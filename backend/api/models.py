@@ -15,6 +15,8 @@ class Follow(models.Model):
                             related_name="follower")
     
     class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(fields=["user", "author"],
                                          name="unique_follow"),
@@ -25,18 +27,6 @@ class Follow(models.Model):
 
 
 class Ingredient(models.Model):
-    UNIT_CHOICES = (
-        ("g", "г"),
-        ("ml", "мл"),
-        ("sht", "шт."),
-        ("stl", "ст. л."),
-        ("pvks", "по вкусу"),
-        ("sheptk", "щепотка"),
-        ("kg", "кг"),
-        ("chl", "ч. л."),
-        ("up", "упаковка"),
-        ("st", "стакан"),
-    )
     name = models.CharField(
         verbose_name="Ингредиент",
         max_length=50, 
@@ -46,9 +36,7 @@ class Ingredient(models.Model):
     )
     measurement_unit = models.CharField(
         verbose_name="Единицы измерения",
-        max_length=30, 
-        choices=UNIT_CHOICES, 
-        blank=False
+        max_length=30
     )
     
     class Meta:
@@ -56,7 +44,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
     
     def __str__(self):
-        return self.name + '__' + self.measurement_unit
+        return self.name
 
 
 class Tag(models.Model):
@@ -75,7 +63,7 @@ class Tag(models.Model):
     slug = models.SlugField(blank=False, unique=True, db_index=True)
 
     class Meta:
-        verbose_name = 'Теги'
+        verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
     
     def __str__(self):
@@ -112,12 +100,11 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        related_name="recipes", blank=False
+        through='IngredientAmount'
     )
     tags = models.ManyToManyField(
         Tag, 
         blank=False,
-        related_name="recipes"
     )
     cooking_time = models.PositiveSmallIntegerField(
         blank=False, validators=[greater_then_zero]
@@ -182,15 +169,21 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
-    user = models.ForeignKey(User, 
-                             verbose_name="Пользователь", 
-                             on_delete=models.CASCADE,
-                             related_name="shopping_cart_recipes"
+    user = models.ForeignKey(
+        User, 
+        verbose_name="Пользователь", 
+        on_delete=models.CASCADE,
+        related_name="shopping_cart_recipes"
     )
-    recipe = models.ForeignKey(Recipe,
-                               verbose_name="Рецепт",
-                               on_delete=models.CASCADE,
-                               related_name="shopping_cart_recipes"
+    recipe = models.ForeignKey(
+        Recipe,
+        verbose_name="Покупка",
+        on_delete=models.CASCADE,
+        related_name="shopping_cart_recipes"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата добавления'
     )
 
     class Meta:

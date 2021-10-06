@@ -6,12 +6,9 @@ from .views import FollowViewList, UserActivationView, FollowView
 
 urlpatterns = [
     path('users/subscriptions/', FollowViewList.as_view()),
+    path('users/<int:pk>/subscribe/', FollowView.as_view()),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('auth/', include('djoser.urls.authtoken')),
     path('activation/<str:uid>/<str:token>/', UserActivationView.as_view()),
-    path('users/<int:pk>/subscribe/', FollowView.as_view()),
 ]
-
-
-

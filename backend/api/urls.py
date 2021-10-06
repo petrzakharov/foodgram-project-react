@@ -4,8 +4,8 @@ from rest_framework.routers import DefaultRouter
 from .views import RecipeView, TagListView, TagView, FavoriteView, IngredientViewList, IngredientView
 
 
-router_v1 = DefaultRouter()
-router_v1.register('recipes', RecipeView, basename='recipe')
+router = DefaultRouter()
+router.register('recipes', RecipeView, basename='recipe')
 
 urlpatterns = [
     path('tags/', TagListView.as_view()),
@@ -13,5 +13,5 @@ urlpatterns = [
     path('ingredients/<int:pk>/', IngredientView.as_view()),
     path('ingredients/', IngredientViewList.as_view()),
     path('recipes/<int:pk>/favorite/', FavoriteView.as_view()),
-    path('', include(router_v1.urls)),
+    path('', include(router.urls)),
 ]
