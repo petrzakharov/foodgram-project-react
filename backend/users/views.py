@@ -1,18 +1,17 @@
 from decimal import Context
-from django.shortcuts import get_object_or_404, render
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework import generics, status
-from rest_framework.views import APIView
-from .pagination import LargeResultsSetPagination
-from rest_framework import permissions
 
-from .serializers import UserCreateSerializer
 import requests
-from .models import User
-from api.models import Follow, Recipe
-from .serializers import FollowSerializer
 
+from api.models import Follow, Recipe
+from django.shortcuts import get_object_or_404, render
+from rest_framework import generics, permissions, status
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import User
+from .pagination import LargeResultsSetPagination
+from .serializers import FollowSerializer, UserCreateSerializer
 
 # class UserCreateView(APIView):
 #     def post(self, request):

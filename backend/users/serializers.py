@@ -1,8 +1,9 @@
+from api.models import Favorite, Follow, Recipe
 from django.db.models import fields
-from rest_framework import serializers
-from users.models import User
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from api.models import Follow, Favorite, Recipe
+from rest_framework import serializers
+
+from users.models import User
 
 
 class RecipeSerializer(serializers.ModelSerializer):

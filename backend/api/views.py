@@ -1,19 +1,21 @@
 from django.db.models import query
-from django.shortcuts import render
-from requests.api import request
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework import generics
-from .models import Ingredient, Tag, Favorite, Follow, Recipe
-from users.models import User
-from .serializers import RecipeListSerializer, TagSerializer, FavoriteSerializer, IngredientSerializer
-from rest_framework import permissions, filters, status, viewsets
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsAdminOrAuthorOrReadOnly
+from requests.api import request
+from rest_framework import filters, generics, permissions, status, viewsets
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from users.models import User
 from users.pagination import LargeResultsSetPagination
+
+from .models import Favorite, Follow, Ingredient, Recipe, Tag
+from .permissions import IsAdminOrAuthorOrReadOnly
+from .serializers import (
+    FavoriteSerializer, IngredientSerializer, RecipeListSerializer,
+    TagSerializer,
+)
+
 
 # Тег - готово
 class TagListView(generics.ListAPIView):

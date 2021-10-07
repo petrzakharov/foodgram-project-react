@@ -1,6 +1,5 @@
 from django.contrib.admin.filters import ChoicesFieldListFilter
 from django.db import models
-
 from users.models import User
 
 from .utils import greater_then_zero
@@ -193,3 +192,5 @@ class ShoppingCart(models.Model):
         ]
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+
+

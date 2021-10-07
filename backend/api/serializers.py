@@ -1,12 +1,13 @@
+from api.models import (
+    Favorite, Follow, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
+)
 from django.db.models import fields
 from requests.api import request
 from requests.models import cookiejar_from_dict
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-from api.models import IngredientAmount, ShoppingCart
-from users.serializers import CustomUserSerializer
 from users.models import User
-from api.models import Tag, Favorite, Recipe, Follow, Ingredient
+from users.serializers import CustomUserSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -16,14 +17,11 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    measurement_unit = serializers.SerializerMethodField()
     
     class Meta:
         model = Ingredient
         fields = "__all__"
-    
-    # def get_measurement_unit(self, obj):
-    #     return obj.get_measurement_unit_display()
+
     
     
 class ShowRecipeIngredientSerializer(serializers.ModelSerializer):
@@ -38,13 +36,15 @@ class ShowRecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
+# class AddIngredientToRecipeSerializer(serializers.ModelSerializer):
+#     id = serializers.IntegerField()
+#     amount = serializers.IntegerField()
 
-# class RecipeJoinIngredientsSerializer(serializers.ModelSerializer):
-#     ingredients = IngredientSerializer()
-    
 #     class Meta:
-#         model = IngredientAmount
-#         exclude = ('recipe',)
+#         model = Ingredient
+#         fields = ('id', 'amount')
+
+
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
@@ -83,4 +83,4 @@ class RecipeListSerializer(serializers.ModelSerializer):
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ('id', 'name', 'image', "cooking_time")
