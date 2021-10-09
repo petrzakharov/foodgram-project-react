@@ -1,5 +1,3 @@
-from decimal import Context
-
 import requests
 
 from api.models import Follow, Recipe
@@ -29,13 +27,13 @@ class UserLogout(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-#при переходе юзера по ссылке активации, ловим гет запрос и отправляем пост запрос
+# при переходе юзера по ссылке активации, ловим гет запрос и отправляем пост запрос
 class UserActivationView(APIView):
     """Отправка POST запроса при активации по ссылке"""
     def get(self, request, uid, token):
         protocol = 'https://' if request.is_secure() else 'http://'
         web_url = protocol + request.get_host()
-        post_url = web_url + "api/users/activation/"
+        post_url = web_url + 'api/users/activation/'
         post_data = {'uid': uid, 'token': token}
         result = requests.post(post_url, data=post_data)
         content = result.text()
@@ -47,12 +45,12 @@ class FollowViewList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = FollowSerializer
     pagination_class = LargeResultsSetPagination
-    permission_classes = [permissions.IsAuthenticated,]
-    
+    permission_classes = [permissions.IsAuthenticated, ]
+
     def get_queryset(self):
         qs = User.objects.filter(following__user=self.request.user)
         return qs
-       
+
 
 class FollowView(APIView):
     """Подписка на нового автора"""
@@ -64,7 +62,7 @@ class FollowView(APIView):
             ).exists()
         ):
             return Response(
-                {"errors": "Подписка уже существует"}, 
+                {'errors': 'Подписка уже существует'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         author = User.objects.filter(id=pk).first()
@@ -79,11 +77,10 @@ class FollowView(APIView):
                 status=status.HTTP_201_CREATED
             )
         return Response(status=status.HTTP_404_NOT_FOUND)
-        
-            
+
     def delete(self, request, pk):
         """Отписка от автора"""
-        author = get_object_or_404(User, pk=1)
+
         queryset = Follow.objects.filter(author__id=pk, user=request.user)
         if not queryset.exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)

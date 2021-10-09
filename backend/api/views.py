@@ -1,4 +1,5 @@
 from django.db.models import query
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
 from requests.api import request
@@ -9,11 +10,11 @@ from rest_framework.views import APIView
 from users.models import User
 from users.pagination import LargeResultsSetPagination
 
-from .models import Favorite, Follow, Ingredient, Recipe, Tag
+from .models import Favorite, Follow, Ingredient, Recipe, ShoppingCart, Tag
 from .permissions import IsAdminOrAuthorOrReadOnly
 from .serializers import (
-    FavoriteSerializer, IngredientSerializer, RecipeListSerializer,
-    TagSerializer,
+    CreateRecipeSerializer, FavoriteSerializer, IngredientSerializer,
+    RecipeListSerializer, ShoppingCartViewSerializer, TagSerializer,
 )
 
 
@@ -24,7 +25,7 @@ class TagListView(generics.ListAPIView):
     serializer_class = TagSerializer
     pagination_class = None
 
-    
+
 class TagView(generics.RetrieveAPIView):
     """Добавить новый тег"""
     queryset = Tag.objects.all()
@@ -42,12 +43,11 @@ class FavoriteView(APIView):
         if has_favorite:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         Favorite.objects.create(user=request.user, recipe_id=pk)
-        
+
         serialized = FavoriteSerializer(
             Recipe.objects.get(id=pk)
         )
         return Response(serialized.data, status=status.HTTP_201_CREATED)
-
 
     def delete(self, request, pk=None):
         has_favorite = Favorite.objects.filter(
@@ -55,12 +55,12 @@ class FavoriteView(APIView):
         ).count()
         if not has_favorite:
             return Response(
-                data={'errors':'Рецепт не был добавлен'}, 
+                data={'errors': 'Рецепт не был добавлен'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         Favorite.objects.filter(user=request.user, recipe_id=pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
+
 
 # Ингредиент - готово
 class IngredientView(generics.RetrieveAPIView):
@@ -85,10 +85,10 @@ class IngredientViewList(generics.ListAPIView):
 
 class RecipeView(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-   # serializer_class = CreateRecipeSerializer # разобрать, написать
+    serializer_class = CreateRecipeSerializer
     permission_classes = [IsAdminOrAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    #filter_class = RecipeFilter # разобрать, написать
+    # filter_class = RecipeFilter # разобрать, написать
     pagination_class = LargeResultsSetPagination
 
     def perform_create(self, serializer):
@@ -96,5 +96,58 @@ class RecipeView(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
-            return RecipeListSerializer 
-        #return CreateRecipeSerializer  # разобрать, написать
+            return RecipeListSerializer
+        return CreateRecipeSerializer
+
+
+class ShoppingCartView(generics.RetrieveAPIView, generics.DestroyAPIView):
+    queryset = ShoppingCart.objects.all()
+    serializer_class = ShoppingCartViewSerializer
+    permission_classes = [IsAdminOrAuthorOrReadOnly]
+
+    def get(self, request, pk, *args, **kwargs):
+        recipe = Recipe.objects.filter(id=pk).first()
+        obj, created = ShoppingCart.objects.get_or_create(
+            recipe=recipe,
+            user=request.user
+        )
+        if not created:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        serialized = ShoppingCartViewSerializer(recipe)
+        return Response(serialized.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, pk, *args, **kwargs):
+        recipe = Recipe.objects.filter(id=pk).first()
+        obj = ShoppingCart.objects.get(recipe=recipe, user=request.user)
+        if not obj:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ShoppingCartDownloadView(APIView):
+    def get(self, request):
+        shopping_cart = request.user.shopping.all()
+        shopping_list, result = {}, []
+        for shopping in shopping_cart:
+            ingredients = shopping.recipe.ingredientamount_set.all()
+            for ingredient in ingredients:
+                name = ingredient.ingredient.name
+                amount = ingredient.amount
+                unit = ingredient.ingredient.measurement_unit
+                if name not in shopping_list:
+                    shopping_list[name] = {
+                        'amount': amount,
+                        'unit': unit
+                    }
+                else:
+                    shopping_list[name]['amount'] += amount
+        for item in shopping_list:
+            result.append(
+                f'{item}, {shopping_list[item]["unit"]}: '
+                f'{shopping_list[item]["amount"]} \n\n'
+            )
+
+        response = HttpResponse(result, 'Content-Type: application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="wishlist.pdf"'
+        return response

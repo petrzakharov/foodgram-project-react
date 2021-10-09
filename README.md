@@ -2,7 +2,7 @@
 
 ------
 
-`![status workflow](https://github.com/petrzakharov/yamdb_final/actions/workflows/yamdb_workflow.yml/badge.svg)`
+`![status workflow](https://github.com/petrzakharov/foodgram-project-react/actions/workflows/backend.yml/badge.svg)`
 
 ## Описание
 
