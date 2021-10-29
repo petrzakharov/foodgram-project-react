@@ -1,6 +1,4 @@
-from django.contrib.admin.filters import ChoicesFieldListFilter
 from django.db import models
-from django.utils import timezone
 from users.models import User
 
 from .utils import greater_then_zero
@@ -156,7 +154,7 @@ class Favorite(models.Model):
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE,
         verbose_name='Рецепт',
-        related_name='favorites'
+        related_name='favorites_by'  # favorites
     )
 
     class Meta:

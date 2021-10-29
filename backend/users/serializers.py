@@ -1,5 +1,4 @@
-from api.models import Favorite, Follow, Recipe
-from django.db.models import fields
+from api.models import Follow, Recipe
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from users.models import User

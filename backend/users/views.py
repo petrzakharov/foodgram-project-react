@@ -1,15 +1,14 @@
 import requests
 
-from api.models import Follow, Recipe
-from django.shortcuts import get_object_or_404, render
+from api.models import Follow
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import User
 from .pagination import LargeResultsSetPagination
-from .serializers import FollowSerializer, UserCreateSerializer
+from .serializers import FollowSerializer
 
 # class UserCreateView(APIView):
 #     def post(self, request):
@@ -27,9 +26,8 @@ class UserLogout(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-# при переходе юзера по ссылке активации, ловим гет запрос и отправляем пост запрос
 class UserActivationView(APIView):
-    """Отправка POST запроса при активации по ссылке"""
+    """Отправка POST запроса при активации по ссылке из письма"""
     def get(self, request, uid, token):
         protocol = 'https://' if request.is_secure() else 'http://'
         web_url = protocol + request.get_host()
@@ -53,7 +51,7 @@ class FollowViewList(generics.ListAPIView):
 
 
 class FollowView(APIView):
-    """Подписка на нового автора"""
+    """Подписка/отписка на автора"""
     def get(self, request, pk):
         if pk == request.user.id or (
             Follow.objects.filter(
@@ -62,10 +60,10 @@ class FollowView(APIView):
             ).exists()
         ):
             return Response(
-                {'errors': 'Подписка уже существует'},
+                {'errors': 'Подписка невозможна'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        author = User.objects.filter(id=pk).first()
+        author = get_object_or_404(User, id=pk)
         if author:
             Follow.objects.create(
                 author_id=pk,
@@ -79,10 +77,10 @@ class FollowView(APIView):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, pk):
-        """Отписка от автора"""
-
-        queryset = Follow.objects.filter(author__id=pk, user=request.user)
-        if not queryset.exists():
+        """Отписка от автора, если автор не существует 404"""
+        _ = get_object_or_404(User, id=pk)
+        follow = Follow.objects.filter(author_id=pk, user=request.user)
+        if not follow.exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        queryset.delete()
+        follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

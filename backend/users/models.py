@@ -1,7 +1,5 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.contrib.auth.models import (
-    AbstractUser, PermissionsMixin, UserManager,
-)
+from django.contrib.auth.models import PermissionsMixin, UserManager
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -60,7 +58,8 @@ class UserManager(BaseUserManager):
         )
 
     def create_staffuser(
-        self, username, first_name=None, last_name=None, email=None, password=None
+        self, username, first_name=None, last_name=None,
+        email=None, password=None
     ):
         user = self.create_user(
             username,
@@ -80,7 +79,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), unique=True, blank=True)
     first_name = models.CharField(_('first name'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, blank=True)
-    is_active = models.BooleanField(_('active'), default=True) # тут активировать только после нажатия на ссылку
+    is_active = models.BooleanField(_('active'), default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = UserManager()

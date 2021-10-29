@@ -1,24 +1,26 @@
 from django.contrib import admin
 
-from .models import (Favorite, Follow, Ingredient, IngredientAmount, Recipe,
-                     ShoppingCart, Tag)
+from .models import (
+    Favorite, Follow, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
+)
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ("name", "author")
-    search_fields = ("name",)
-    list_filter = ("name", "author", "tags")
-    empty_value_display = "-пусто-"
+    list_display = ('name', 'author')
+    search_fields = ('name',)
+    list_filter = ('name', 'author', 'tags')
+    empty_value_display = '-пусто-'
+
 
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ("name", "measurement_unit")
-    search_fields = ("name",)
-    list_filter = ("name",)
-    empty_value_display = "-пусто-"
+    list_display = ('name', 'measurement_unit')
+    search_fields = ('name',)
+    list_filter = ('name',)
+    empty_value_display = '-пусто-'
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ("recipe", "user")
+    list_display = ('recipe', 'user')
 
 
 admin.site.register(IngredientAmount)

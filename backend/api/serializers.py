@@ -1,21 +1,18 @@
 from api.models import (
-    Favorite, Follow, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
+    Favorite, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
 )
-from django.db.models import F, fields
+from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
-from requests.api import request
-from requests.models import cookiejar_from_dict
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.generics import get_object_or_404
-from users.models import User
 from users.serializers import CustomUserSerializer
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('name', 'color', 'slug')
+        fields = ('id', 'name', 'color', 'slug')
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -25,7 +22,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ingredient
         fields = '__all__'
@@ -65,7 +61,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:  # проверить что передается request
+        if not request or request.user.is_anonymous:
             return False
         return Favorite.objects.filter(
             recipe=obj, user=request.user
@@ -73,7 +69,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous: # проверить что передается request
+        if not request or request.user.is_anonymous:
             return False
         return ShoppingCart.objects.filter(
             user=request.user, recipe=obj
@@ -164,4 +160,4 @@ class ShoppingCartViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('name', 'image', 'cooking_time')
+        fields = ('id', 'name', 'image', 'cooking_time')

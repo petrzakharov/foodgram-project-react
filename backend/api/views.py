@@ -1,16 +1,14 @@
-from django.db.models import query
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from requests.api import request
-from rest_framework import filters, generics, permissions, status, viewsets
-from rest_framework.request import Request
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from users.models import User
 from users.pagination import LargeResultsSetPagination
 
-from .models import Favorite, Follow, Ingredient, Recipe, ShoppingCart, Tag
+from .filters import RecipeFilter
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .permissions import IsAdminOrAuthorOrReadOnly
 from .serializers import (
     CreateRecipeSerializer, FavoriteSerializer, IngredientSerializer,
@@ -18,12 +16,12 @@ from .serializers import (
 )
 
 
-# Тег - готово
 class TagListView(generics.ListAPIView):
     """Список всех тегов"""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
+    permission_classes = (permissions.AllowAny,)
 
 
 class TagView(generics.RetrieveAPIView):
@@ -31,9 +29,9 @@ class TagView(generics.RetrieveAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
+    permission_classes = (permissions.AllowAny,)
 
 
-# Избранное - готово
 class FavoriteView(APIView):
     """Добавить/удалить рецепт из избранного"""
     def get(self, request, pk=None):
@@ -62,17 +60,20 @@ class FavoriteView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Ингредиент - готово
 class IngredientView(generics.RetrieveAPIView):
     """Добавить ингредиент"""
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
+    permission_classes = [permissions.AllowAny, ]
+    search_fields = ['name', ]
     pagination_class = None
 
 
 class IngredientViewList(generics.ListAPIView):
     """Список ингредиентов"""
     serializer_class = IngredientSerializer
+    permission_classes = [permissions.AllowAny, ]
+    search_fields = ['name', ]
     pagination_class = None
 
     def get_queryset(self):
@@ -88,7 +89,7 @@ class RecipeView(viewsets.ModelViewSet):
     serializer_class = CreateRecipeSerializer
     permission_classes = [IsAdminOrAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    # filter_class = RecipeFilter # разобрать, написать
+    filter_class = RecipeFilter
     pagination_class = LargeResultsSetPagination
 
     def perform_create(self, serializer):
@@ -103,11 +104,12 @@ class RecipeView(viewsets.ModelViewSet):
 class ShoppingCartView(generics.RetrieveAPIView, generics.DestroyAPIView):
     queryset = ShoppingCart.objects.all()
     serializer_class = ShoppingCartViewSerializer
-    permission_classes = [IsAdminOrAuthorOrReadOnly]
+    permission_classes = [IsAdminOrAuthorOrReadOnly,
+                          permissions.IsAuthenticated, ]
 
     def get(self, request, pk, *args, **kwargs):
-        recipe = Recipe.objects.filter(id=pk).first()
-        obj, created = ShoppingCart.objects.get_or_create(
+        recipe = get_object_or_404(Recipe, id=pk)
+        _, created = ShoppingCart.objects.get_or_create(
             recipe=recipe,
             user=request.user
         )
@@ -117,15 +119,18 @@ class ShoppingCartView(generics.RetrieveAPIView, generics.DestroyAPIView):
         return Response(serialized.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk, *args, **kwargs):
-        recipe = Recipe.objects.filter(id=pk).first()
-        obj = ShoppingCart.objects.get(recipe=recipe, user=request.user)
-        if not obj:
+        recipe = get_object_or_404(Recipe, id=pk)
+        try:
+            obj = ShoppingCart.objects.get(recipe=recipe, user=request.user)
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ObjectDoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ShoppingCartDownloadView(APIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
     def get(self, request):
         shopping_cart = request.user.shopping.all()
         shopping_list, result = {}, []

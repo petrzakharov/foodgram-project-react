@@ -50,8 +50,8 @@
     `DB_NAME=`
     `DB_USER=`
     `DB_PASSWORD=`
-    `DB_HOST=db`
-    `DB_PORT=5432`
+    `DB_HOST=`
+    `DB_PORT=`
 
 2. Собрать docker-compose
 
@@ -71,13 +71,10 @@
 
     `sudo docker-compose exec web python manage.py createsuperuser`
 
-> Готово, можно перейти по <http://84.201.154.175/admin/>
+## Инфраструктура
 
-## Используемые технологии
-
-1. Python
-2. Django
-3. DRF
-4. PostgreSQL
-5. nginx
-6. Docker
+1. Проект работает с СУБД PostgreSQL.
+2. Проект запущен на сервере в Яндекс.Облаке в трёх контейнерах: nginx, PostgreSQL и Django+Gunicorn. 
+3. Контейнер с проектом обновляется на Docker Hub.
+4. В nginx настроена раздача статики, остальные запросы переадресуются в Gunicorn.
+5. Данные сохраняются в volumes.
