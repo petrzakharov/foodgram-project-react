@@ -4,8 +4,10 @@ from pathlib import Path
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = 'django-insecure-vdp1e^sgpob9sv&rj3yr#j5o4h&u8&=i)-vtk44u^nm43)1f0d'
-# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY', 
+    'django-insecure-vdp1e^sgpob9sv&rj3yr#j5o4h&u8&=i)-vtk44u^nm43)1f0d'
+)
 
 DEBUG = True
 
@@ -119,7 +121,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
-        # "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend"

@@ -32,7 +32,6 @@ class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Ингредиент',
         max_length=50,
-        blank=False,
         db_index=True,
         unique=True
     )
@@ -52,17 +51,15 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     name = models.CharField(
         verbose_name='Тег',
-        blank=False,
         max_length=50,
         unique=True
     )
     color = models.CharField(
         verbose_name='HEX код',
-        blank=False,
         unique=True,
         max_length=100
     )
-    slug = models.SlugField(blank=False, unique=True, db_index=True)
+    slug = models.SlugField(unique=True, db_index=True)
 
     class Meta:
         verbose_name = 'Тег'
@@ -78,12 +75,10 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор',
         related_name='recipes',
-        blank=False,
         db_index=True
     )
     name = models.CharField(
         verbose_name='Рецепт',
-        blank=False,
         max_length=150,
         db_index=True
     )
@@ -92,12 +87,10 @@ class Recipe(models.Model):
         height_field=None,
         width_field=None,
         max_length=None,
-        blank=True,
-        null=True
+        blank=True
     )
     text = models.TextField(
         verbose_name='Описание',
-        blank=False,
         max_length=255
     )
     ingredients = models.ManyToManyField(
@@ -105,16 +98,14 @@ class Recipe(models.Model):
         through='IngredientAmount'
     )
     tags = models.ManyToManyField(
-        Tag,
-        blank=False,
+        Tag
     )
     cooking_time = models.PositiveSmallIntegerField(
-        blank=False, validators=[greater_then_zero]
+        validators=[greater_then_zero]
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
-        auto_now_add=True,
-        blank=False
+        auto_now_add=True
     )
 
     class Meta:
@@ -132,7 +123,6 @@ class IngredientAmount(models.Model):
                                    verbose_name='Ингредиент', null=True)
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
-        blank=False,
         validators=[greater_then_zero],
         unique=True
     )

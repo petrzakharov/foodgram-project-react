@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.pagination import LargeResultsSetPagination
@@ -16,16 +16,15 @@ from .serializers import (
 )
 
 
-class TagListView(generics.ListAPIView):
-    """Список всех тегов"""
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    pagination_class = None
-    permission_classes = (permissions.AllowAny,)
+class CustomListRetrieveMixin(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
 
 
-class TagView(generics.RetrieveAPIView):
-    """Добавить новый тег"""
+class TagViewSet(CustomListRetrieveMixin):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
@@ -37,11 +36,12 @@ class FavoriteView(APIView):
     def get(self, request, pk=None):
         has_favorite = Favorite.objects.filter(
             user=request.user, recipe_id=pk
-        ).count()
+        ).exists()
         if has_favorite:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         Favorite.objects.create(user=request.user, recipe_id=pk)
 
+        # здесь создается объект модели Favorite, но вернуть необходимо Recipe
         serialized = FavoriteSerializer(
             Recipe.objects.get(id=pk)
         )
@@ -50,7 +50,7 @@ class FavoriteView(APIView):
     def delete(self, request, pk=None):
         has_favorite = Favorite.objects.filter(
             user=request.user, recipe_id=pk
-        ).count()
+        ).exists()
         if not has_favorite:
             return Response(
                 data={'errors': 'Рецепт не был добавлен'},
@@ -58,6 +58,15 @@ class FavoriteView(APIView):
             )
         Favorite.objects.filter(user=request.user, recipe_id=pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class IngredientViewSet(CustomListRetrieveMixin):
+    serializer_class = IngredientSerializer
+    queryset = Ingredient.objects.all()
+    permission_classes = [permissions.AllowAny, ]
+    search_fields = ['name', ]
+    pagination_class = None
+    # тут должен быть кастомный фильтр
 
 
 class IngredientView(generics.RetrieveAPIView):
