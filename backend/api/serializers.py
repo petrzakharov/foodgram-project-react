@@ -93,11 +93,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('author', )
 
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags)
+    def add_ingredients(self, ingredients, recipe):
         for ingredient in ingredients:
             obj = get_object_or_404(Ingredient, id=ingredient['id'])
             amount = ingredient['amount']
@@ -111,42 +107,46 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 ingredient=obj,
                 defaults={'amount': amount}
             )
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        self.add_ingredients(ingredients, recipe)
         return recipe
 
-    def update(self, instance, validated_data):
+    def update(self, recipe, validated_data):
         if 'ingredients' in self.initial_data:
             ingredients = validated_data.pop('ingredients')
-            instance.ingredients.clear()
-            for ingredient in ingredients:
-                IngredientAmount.objects.create(
-                    recipe=instance,
-                    ingredient=get_object_or_404(
-                        Ingredient,
-                        id=ingredient['id']
-                    ),
-                    amount=ingredient['amount']
-                )
+            recipe.ingredients.clear()
+            self.add_ingredients(ingredients, recipe)
         if 'tags' in self.initial_data:
             tags = validated_data.pop('tags')
-            instance.tags.set(tags)
-
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time
-        )
-        instance.image = validated_data.get('image', instance.image)
-        instance.save()
-        return instance
+            recipe.tags.set(tags)
+        return super().update(recipe, validated_data)
 
     def validate(self, data):
         ingredients = data['ingredients']
+        tags_slugs = [tag.slug for tag in data['tags']]
+        coocking_time = data['cooking_time']
         for ingredient in ingredients:
             if ingredient['amount'] <= 0:
                 raise serializers.ValidationError(
                     'Увеличьте количество ингридиента'
                 )
+        if len(ingredients) < 1:
+            raise serializers.ValidationError(
+                'Добавьте хотя бы один ингредиент'
+            )
+        if len(set(tags_slugs)) != len(tags_slugs):
+            raise serializers.ValidationError(
+                'Добавленные теги неуникальны'
+            )
+        if coocking_time <= 0:
+            raise serializers.ValidationError(
+                'Время приготовления некорректное'
+            )
         return data
 
     def to_representation(self, instance):

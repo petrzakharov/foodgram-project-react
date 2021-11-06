@@ -2,21 +2,16 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
-    FavoriteView, IngredientView, IngredientViewList, RecipeView,
-    ShoppingCartDownloadView, ShoppingCartView, TagViewSet,
+    FavoriteView, IngredientViewSet, RecipeView, ShoppingCartDownloadView,
+    ShoppingCartView, TagViewSet,
 )
 
 router = DefaultRouter()
 router.register('recipes', RecipeView, basename='recipes')
 router.register('tags', TagViewSet, basename='tags')
+router.register('ingredients', IngredientViewSet, basename='ingredients')
 
 urlpatterns = [
-    path(
-        'ingredients/<int:pk>/',
-        IngredientView.as_view(),
-        name='ingredient'
-    ),
-    path('ingredients/', IngredientViewList.as_view(), name='ingredient'),
     path('recipes/download_shopping_cart/',
          ShoppingCartDownloadView.as_view(),
          name='download_shopping_cart'

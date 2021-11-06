@@ -1,4 +1,3 @@
-import requests
 
 from api.models import Follow
 from django.shortcuts import get_object_or_404
@@ -9,33 +8,6 @@ from rest_framework.views import APIView
 from .models import User
 from .pagination import LargeResultsSetPagination
 from .serializers import FollowSerializer
-
-# class UserCreateView(APIView):
-#     def post(self, request):
-#         try:
-#             user = UserCreateSerializer(data=request.data)
-#         except:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-#         return Response(status=status.HTTP_200_OK)
-
-
-class UserLogout(APIView):
-    """Разлогин пользователя"""
-    def get(self, request):
-        request.user.auth_token.delete()
-        return Response(status=status.HTTP_200_OK)
-
-
-class UserActivationView(APIView):
-    """Отправка POST запроса при активации по ссылке из письма"""
-    def get(self, request, uid, token):
-        protocol = 'https://' if request.is_secure() else 'http://'
-        web_url = protocol + request.get_host()
-        post_url = web_url + 'api/users/activation/'
-        post_data = {'uid': uid, 'token': token}
-        result = requests.post(post_url, data=post_data)
-        content = result.text()
-        return Response(content)
 
 
 class FollowViewList(generics.ListAPIView):

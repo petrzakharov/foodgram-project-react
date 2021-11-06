@@ -1,4 +1,4 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,8 +7,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.pagination import LargeResultsSetPagination
 
-from .filters import RecipeFilter
-from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from .filters import IngredientNameFilter, RecipeFilter
+from .models import (
+    Favorite, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
+)
 from .permissions import IsAdminOrAuthorOrReadOnly
 from .serializers import (
     CreateRecipeSerializer, FavoriteSerializer, IngredientSerializer,
@@ -66,31 +68,7 @@ class IngredientViewSet(CustomListRetrieveMixin):
     permission_classes = [permissions.AllowAny, ]
     search_fields = ['name', ]
     pagination_class = None
-    # тут должен быть кастомный фильтр
-
-
-class IngredientView(generics.RetrieveAPIView):
-    """Добавить ингредиент"""
-    serializer_class = IngredientSerializer
-    queryset = Ingredient.objects.all()
-    permission_classes = [permissions.AllowAny, ]
-    search_fields = ['name', ]
-    pagination_class = None
-
-
-class IngredientViewList(generics.ListAPIView):
-    """Список ингредиентов"""
-    serializer_class = IngredientSerializer
-    permission_classes = [permissions.AllowAny, ]
-    search_fields = ['name', ]
-    pagination_class = None
-
-    def get_queryset(self):
-        queryset = Ingredient.objects.all()
-        name_param = self.request.query_params.get('name')
-        if not name_param:
-            return queryset
-        return queryset.filter(name__startswith=name_param)
+    filter_class = IngredientNameFilter
 
 
 class RecipeView(viewsets.ModelViewSet):
@@ -133,7 +111,7 @@ class ShoppingCartView(generics.RetrieveAPIView, generics.DestroyAPIView):
             obj = ShoppingCart.objects.get(recipe=recipe, user=request.user)
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except ObjectDoesNotExist:
+        except ShoppingCart.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -141,27 +119,20 @@ class ShoppingCartDownloadView(APIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     def get(self, request):
-        shopping_cart = request.user.shopping.all()
-        shopping_list, result = {}, []
-        for shopping in shopping_cart:
-            ingredients = shopping.recipe.ingredientamount_set.all()
-            for ingredient in ingredients:
-                name = ingredient.ingredient.name
-                amount = ingredient.amount
-                unit = ingredient.ingredient.measurement_unit
-                if name not in shopping_list:
-                    shopping_list[name] = {
-                        'amount': amount,
-                        'unit': unit
-                    }
-                else:
-                    shopping_list[name]['amount'] += amount
-        for item in shopping_list:
-            result.append(
-                f'{item}, {shopping_list[item]["unit"]}: '
-                f'{shopping_list[item]["amount"]} \n\n'
+        ingredients_list = []
+        user_shopping_list = IngredientAmount.objects.filter(
+            recipe__shopping_cart_recipes__user=request.user.id).values_list(
+                'ingredient__name', 'amount', 'ingredient__measurement_unit')
+        all_count_ingredients = user_shopping_list.values(
+            'ingredient__name', 'ingredient__measurement_unit').annotate(
+                total=Sum('amount'))
+        for ingredient in all_count_ingredients:
+            ingredients_list.append(
+                f'{ingredient["ingredient__name"]} - '
+                f'{ingredient["total"]} '
+                f'{ingredient["ingredient__measurement_unit"]} \n\n'
             )
-
-        response = HttpResponse(result, 'Content-Type: application/pdf')
+        response = HttpResponse(
+            ingredients_list, 'Content-Type: application/pdf')
         response['Content-Disposition'] = 'attachment; filename="wishlist.pdf"'
         return response

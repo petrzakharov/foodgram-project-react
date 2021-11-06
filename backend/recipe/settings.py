@@ -67,7 +67,7 @@ DATABASES = {
     }
 }
 
-
+#после того как проект будет запущен в контейнерах, будет использоваться pg
 # DATABASES = {
 #     'default': {
 #         'ENGINE': os.environ.get('DB_ENGINE'),
@@ -144,11 +144,6 @@ EMAIL_PORT = os.environ.get('EMAIL_PORT')
 SECURITY_EMAIL_SENDER = os.environ.get('SECURITY_EMAIL_SENDER')
 
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': 'activation/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': True,
-    'SEND_CONFIRMATION_EMAIL': True,
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserCreateSerializer',
         'user': 'users.serializers.CustomUserSerializer',
