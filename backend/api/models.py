@@ -1,7 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.db import models
-from users.models import User
 
 from .utils import greater_then_zero
+
+User = get_user_model()
 
 
 class Follow(models.Model):
@@ -123,8 +125,7 @@ class IngredientAmount(models.Model):
                                    verbose_name='Ингредиент', null=True)
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
-        validators=[greater_then_zero],
-        unique=True
+        validators=[greater_then_zero]
     )
 
     class Meta:

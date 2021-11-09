@@ -129,7 +129,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     def validate(self, data):
         ingredients = data['ingredients']
         tags_slugs = [tag.slug for tag in data['tags']]
-        coocking_time = data['cooking_time']
+        cooking_time = data['cooking_time']
         for ingredient in ingredients:
             if ingredient['amount'] <= 0:
                 raise serializers.ValidationError(
@@ -143,7 +143,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Добавленные теги неуникальны'
             )
-        if coocking_time <= 0:
+        if cooking_time <= 0:
             raise serializers.ValidationError(
                 'Время приготовления некорректное'
             )

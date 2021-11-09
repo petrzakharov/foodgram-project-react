@@ -1,7 +1,9 @@
 from api.models import Follow, Recipe
+from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from users.models import User
+
+User = get_user_model()
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -49,7 +51,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        qs = obj.recipes.all()[:request.query_params.get('recipes_limit')]
+        qs = obj.recipes.all()[:int(request.query_params.get('recipes_limit'))]
         serialized = RecipeSerializer(qs, many=True)
         return serialized.data
 

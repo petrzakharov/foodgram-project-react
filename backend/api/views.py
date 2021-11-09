@@ -2,12 +2,13 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, mixins, permissions, status, viewsets
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.pagination import LargeResultsSetPagination
 
 from .filters import IngredientNameFilter, RecipeFilter
+from .mixins import CustomListRetrieveMixin
 from .models import (
     Favorite, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
 )
@@ -16,14 +17,6 @@ from .serializers import (
     CreateRecipeSerializer, FavoriteSerializer, IngredientSerializer,
     RecipeListSerializer, ShoppingCartViewSerializer, TagSerializer,
 )
-
-
-class CustomListRetrieveMixin(
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
-):
-    pass
 
 
 class TagViewSet(CustomListRetrieveMixin):
@@ -43,9 +36,8 @@ class FavoriteView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         Favorite.objects.create(user=request.user, recipe_id=pk)
 
-        # здесь создается объект модели Favorite, но вернуть необходимо Recipe
         serialized = FavoriteSerializer(
-            Recipe.objects.get(id=pk)
+            get_object_or_404(Recipe, id=pk)
         )
         return Response(serialized.data, status=status.HTTP_201_CREATED)
 
