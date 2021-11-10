@@ -1,4 +1,4 @@
-from api.models import (
+from .models import (
     Favorite,
     Ingredient,
     IngredientAmount,
