@@ -1,17 +1,13 @@
-from .models import (
-    Favorite,
-    Ingredient,
-    IngredientAmount,
-    Recipe,
-    ShoppingCart,
-    Tag,
-)
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.generics import get_object_or_404
 from users.serializers import CustomUserSerializer
+
+from .models import (
+    Favorite, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
+)
 
 
 class TagSerializer(serializers.ModelSerializer):

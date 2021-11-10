@@ -19,8 +19,7 @@ class FollowViewList(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     def get_queryset(self):
-        qs = User.objects.filter(following__user=self.request.user)
-        return qs
+        return User.objects.filter(following__user=self.request.user)
 
 
 class FollowView(APIView):

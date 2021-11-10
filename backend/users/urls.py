@@ -1,7 +1,7 @@
 from django.urls import include, path
 from djoser import views
-from .views import FollowView, FollowViewList
 
+from .views import FollowView, FollowViewList
 
 urlpatterns = [
     path(
