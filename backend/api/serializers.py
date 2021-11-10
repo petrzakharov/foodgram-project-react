@@ -1,5 +1,10 @@
 from api.models import (
-    Favorite, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
+    Favorite,
+    Ingredient,
+    IngredientAmount,
+    Recipe,
+    ShoppingCart,
+    Tag,
 )
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField

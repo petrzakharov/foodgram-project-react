@@ -1,7 +1,13 @@
 from django.contrib import admin
 
 from .models import (
-    Favorite, Follow, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
+    Favorite,
+    Follow,
+    Ingredient,
+    IngredientAmount,
+    Recipe,
+    ShoppingCart,
+    Tag,
 )
 
 

@@ -3,6 +3,7 @@ from djoser import views
 
 from .views import FollowView, FollowViewList
 
+
 urlpatterns = [
     path(
         'users/subscriptions/',
