@@ -1,15 +1,8 @@
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import (
-    DjangoFilterBackend,
-)
-from rest_framework import (
-    generics,
-    permissions,
-    status,
-    viewsets,
-)
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.pagination import LargeResultsSetPagination
@@ -17,21 +10,12 @@ from users.pagination import LargeResultsSetPagination
 from .filters import IngredientNameFilter, RecipeFilter
 from .mixins import CustomListRetrieveMixin
 from .models import (
-    Favorite,
-    Ingredient,
-    IngredientAmount,
-    Recipe,
-    ShoppingCart,
-    Tag,
+    Favorite, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
 )
 from .permissions import IsAdminOrAuthorOrReadOnly
 from .serializers import (
-    CreateRecipeSerializer,
-    FavoriteSerializer,
-    IngredientSerializer,
-    RecipeListSerializer,
-    ShoppingCartViewSerializer,
-    TagSerializer,
+    CreateRecipeSerializer, FavoriteSerializer, IngredientSerializer,
+    RecipeListSerializer, ShoppingCartViewSerializer, TagSerializer,
 )
 
 
