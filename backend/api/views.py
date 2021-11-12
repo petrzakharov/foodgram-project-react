@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.pagination import LargeResultsSetPagination
-
 from .filters import IngredientNameFilter, RecipeFilter
 from .mixins import CustomListRetrieveMixin
 from .models import (

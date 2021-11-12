@@ -5,7 +5,6 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.generics import get_object_or_404
 
 from users.serializers import CustomUserSerializer
-
 from .models import (
     Favorite, Ingredient, IngredientAmount, Recipe, ShoppingCart, Tag,
 )
