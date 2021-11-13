@@ -17,7 +17,7 @@ services:
       - ../frontend/:/app/result_build/
 
   backend:
-    build: ../backend
+    image: zakharovp/foodgram_diplom:latest
     restart: always
     volumes: 
       - static_value:/code/backend_static/
