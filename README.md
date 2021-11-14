@@ -3,8 +3,8 @@
 Доступен по адресу: <http://51.250.19.66/>
 
 Доступ в админку:
-    email: admin@admin.ru
-    pass: admin
+* email: admin@admin.ru
+* pass: admin
 ------
 
 ![status workflow](https://github.com/petrzakharov/foodgram-project-react/actions/workflows/backend.yml/badge.svg)
@@ -19,14 +19,36 @@
 * Cобирается DOCKER образ и пушится в DockerHub;
 * На удаленном сервере запускаются команды из файла docker-compose.yaml которые поднимают 3 контейнера (db, web, nginx). Эти команды описаны в файле: backend_workflow.yml.
 
-## Перед деплоем на удаленный сервер
+## Настроить удаленный сервер перед деплоем
 
-1. Установить Docker и Docker-compose
+1. Установить nginx
+```
+sudo apt install nginx -y
+```
+
+2. Разрешить запросы по протоколам http, https и ssh
+```
+sudo ufw allow 'Nginx Full'
+sudo ufw allow OpenSSH
+``` 
+
+3. Включить файрвол
+```
+sudo ufw enable
+```
+
+4. Запустить nginx
+```
+sudo systemctl start nginx
+```
+
+5. Установить Docker и Docker-compose
 
 ```
 sudo apt install docker.io
 ```
-2. Добавить env переменные в Github Actions
+
+6. Добавить env переменные в Github Actions
 
     ```python
     DB_ENGINE
@@ -45,7 +67,7 @@ sudo apt install docker.io
     USER
     ```
 
-3. Скопировать файлы docker-compose.yaml и nginx/default.conf из репозитория на сервер в home/<ваш_username>/docker-compose.yaml и home/<ваш_username>/nginx/default.conf
+7. Скопировать файлы docker-compose.yaml и nginx/default.conf из репозитория на сервер в home/<ваш_username>/docker-compose.yaml и home/<ваш_username>/nginx/default.conf
 
 ## После деплоя на сервер
 
