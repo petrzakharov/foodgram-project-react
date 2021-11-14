@@ -41,6 +41,7 @@ services:
       - backend
       - frontend
 
+
 volumes:
   postgres_data:
   static_value:
