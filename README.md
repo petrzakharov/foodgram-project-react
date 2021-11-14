@@ -12,7 +12,7 @@
 * Разворачивается окружение
 * Прогоняются тесты
 * Cобирается docker образ и пушится в DockerHub
-* На удаленном сервере запускаются команды из файла docker-compose.yaml которые поднимают 3 контейнера (db, web, nginx). Эти команды описаны в файле: yamdb_workflow.yml.
+* На удаленном сервере запускаются команды из файла docker-compose.yaml которые поднимают 3 контейнера (db, web, nginx). Эти команды описаны в файле: backend_workflow.yml.
 
 ## Перед запуском на удаленном сервере
 
@@ -43,31 +43,21 @@
 
 ## После деплоя на сервер
 
-1. Создать и заполнить .env файл
-
-    `SECRET_KEY=`
-    `DB_ENGINE=django.db.backends.postgresql`
-    `DB_NAME=`
-    `DB_USER=`
-    `DB_PASSWORD=`
-    `DB_HOST=`
-    `DB_PORT=`
-
-2. Собрать docker-compose
+1. Собрать docker-compose
 
     `sudo docker-compose up -d --build`
 
-3. Собрать статику
+2. Собрать статику
 
     `sudo docker-compose exec web python manage.py collectstatic --no-input`
 
-4. Создать и применить миграции
+3. Создать и применить миграции
 
     `sudo docker-compose exec web python manage.py makemigrations --noinput`
 
     `sudo docker-compose exec web python manage.py migrate --noinput`
 
-5. Создать супер пользователя
+4. Создать супер пользователя
 
     `sudo docker-compose exec web python manage.py createsuperuser`
 
@@ -77,4 +67,3 @@
 2. Проект запущен на сервере в Яндекс.Облаке в трёх контейнерах: nginx, PostgreSQL и Django+Gunicorn.
 3. Контейнер с проектом обновляется на Docker Hub.
 4. В nginx настроена раздача статики, остальные запросы переадресуются в Gunicorn.
-5. Данные сохраняются в volumes
