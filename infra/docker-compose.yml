@@ -11,8 +11,7 @@ services:
 
   frontend:
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      context: zakharovp/frontend_foodgram_diplom
     volumes:
       - ../frontend/:/app/result_build/
 
