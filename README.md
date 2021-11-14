@@ -23,7 +23,9 @@
 
 1. Установить Docker и Docker-compose
 
-```sudo apt install docker.io```
+```
+sudo apt install docker.io
+```
 2. Добавить env переменные в Github Actions
 
     ```python
@@ -48,15 +50,25 @@
 ## После деплоя на сервер
 
 1. Собрать docker-compose
-```sudo docker-compose up -d --build```
+```
+sudo docker-compose up -d --build
+```
 2. Собрать статику
-```sudo docker-compose exec backend python manage.py collectstatic --no-input```
+```
+sudo docker-compose exec backend python manage.py collectstatic --no-input
+```
 3. Создать и применить миграции
-```sudo docker-compose exec backend python manage.py makemigrations --noinput```
+```
+sudo docker-compose exec backend python manage.py makemigrations --noinput
+```
 
-```sudo docker-compose exec backend python manage.py migrate --noinput```
+```
+sudo docker-compose exec backend python manage.py migrate --noinput
+```
 4. Создать супер пользователя
-```sudo docker-compose exec backend python manage.py createsuperuser```
+```
+sudo docker-compose exec backend python manage.py createsuperuser
+```
 
 ## Используемая инфраструктура
 
