@@ -1,25 +1,29 @@
 # Дипломный проект FOODGRAM
 
+Доступен по адресу: <http://51.250.19.66/>
+
+Доступ в админку:
+    email: admin@admin.ru
+    pass: admin
 ------
 
 ![status workflow](https://github.com/petrzakharov/foodgram-project-react/actions/workflows/backend.yml/badge.svg)
 
 ## Описание
 
-В данном проекте реализован API функционал для проекта FOODGRAM и настроен ci/cd с помощью Github Actions.
+В данном проекте реализован API функционал для проекта FOODGRAM и настроен CI/CD с помощью Github Actions.
 >После того, как сделан пуш в основную ветку:
 
-* Разворачивается окружение
-* Прогоняются тесты
-* Cобирается docker образ и пушится в DockerHub
+* Разворачивается окружение;
+* Прогоняются тесты;
+* Cобирается DOCKER образ и пушится в DockerHub;
 * На удаленном сервере запускаются команды из файла docker-compose.yaml которые поднимают 3 контейнера (db, web, nginx). Эти команды описаны в файле: backend_workflow.yml.
 
-## Перед запуском на удаленном сервере
+## Перед деплоем на удаленный сервер
 
 1. Установить Docker и Docker-compose
 
-    `sudo apt install docker.io`
-
+```sudo apt install docker.io```
 2. Добавить env переменные в Github Actions
 
     ```python
@@ -44,26 +48,19 @@
 ## После деплоя на сервер
 
 1. Собрать docker-compose
-
-    `sudo docker-compose up -d --build`
-
+```sudo docker-compose up -d --build```
 2. Собрать статику
-
-    `sudo docker-compose exec web python manage.py collectstatic --no-input`
-
+```sudo docker-compose exec backend python manage.py collectstatic --no-input```
 3. Создать и применить миграции
+```sudo docker-compose exec backend python manage.py makemigrations --noinput```
 
-    `sudo docker-compose exec web python manage.py makemigrations --noinput`
-
-    `sudo docker-compose exec web python manage.py migrate --noinput`
-
+```sudo docker-compose exec backend python manage.py migrate --noinput```
 4. Создать супер пользователя
+```sudo docker-compose exec backend python manage.py createsuperuser```
 
-    `sudo docker-compose exec web python manage.py createsuperuser`
-
-## Инфраструктура
+## Используемая инфраструктура
 
 1. Проект работает с СУБД PostgreSQL.
-2. Проект запущен на сервере в Яндекс.Облаке в трёх контейнерах: nginx, PostgreSQL и Django+Gunicorn.
+2. Проект запущен на сервере в Яндекс.Облаке в трёх Docker контейнерах: nginx, PostgreSQL и Django+Gunicorn.
 3. Контейнер с проектом обновляется на Docker Hub.
 4. В nginx настроена раздача статики, остальные запросы переадресуются в Gunicorn.
