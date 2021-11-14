@@ -10,9 +10,9 @@ services:
       - ./.env
 
   frontend:
-    image: zakharovp/frontend_foodgram_diplom
+    image: zakharovp/frontend_foodgram_diplom:latest
     volumes:
-      - ../frontend/:/app/result_build/
+      - ./frontend/:/app/result_build/
 
   backend:
     image: zakharovp/foodgram_diplom:latest
