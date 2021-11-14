@@ -11,7 +11,7 @@ services:
 
   frontend:
     build:
-      context: zakharovp/frontend_foodgram_diplom
+      image: zakharovp/frontend_foodgram_diplom
     volumes:
       - ../frontend/:/app/result_build/
 
