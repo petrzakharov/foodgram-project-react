@@ -43,7 +43,7 @@ class FollowView(APIView):
             )
             serialized = FollowSerializer(author, context={'request': request})
             return Response(
-                #serialized.data,
+                serialized.data,
                 status=status.HTTP_201_CREATED
             )
         return Response(status=status.HTTP_404_NOT_FOUND)

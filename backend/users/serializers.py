@@ -52,7 +52,11 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        qs = obj.recipes.all()[:int(request.query_params.get('recipes_limit'))]
+        if request.query_params.get('recipes_limit'):
+            recipes_limit = int(request.query_params.get('recipes_limit'))
+            qs = obj.recipes.all()[:recipes_limit]
+        else:
+            qs = obj.recipes.all()
         serialized = RecipeSerializer(qs, many=True)
         return serialized.data
 
